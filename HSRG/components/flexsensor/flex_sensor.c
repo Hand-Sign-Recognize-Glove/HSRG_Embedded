@@ -23,12 +23,12 @@ typedef struct {
 } flex_ch_t;
 
 /*
-@brief flex sensor의 기본 설정 및 값을 얻어온 후 main에 queue로 전송한다
+@brief flex sensor의 기본 설정 및 값을 얻어온 후 main에 queue로 전송한다    
 @param void* pvParameters 로 Task 핸들을 받아온다
 @retval flex sensor의 값을 리턴한다
 */
 void flex_sensor_get_value(void* pvParameters) {
-    esp_err_t err;
+    static esp_err_t err;
     float value_arr[5] = { -1 };
     QueueHandle_t flexQueue = (QueueHandle_t)pvParameters;
 
@@ -45,7 +45,7 @@ void flex_sensor_get_value(void* pvParameters) {
         ESP_LOGE(TAG, "Fail to config adc width / Error name : %s", esp_err_to_name(err));
         return;
     }
-    ESP_LOGI(TAG, "Succed to config adc width");
+    ESP_LOGI(TAG, "Succeed to config adc width");
 
     for(int i = 0; i < 5; i++) {
         err = adc1_config_channel_atten(flex_channels[i].channel, ADC_ATTEN_11db); // 감쇠 정도 (flex sensor에 11decibel까지 줄여서 전달)
@@ -53,7 +53,7 @@ void flex_sensor_get_value(void* pvParameters) {
             ESP_LOGE(TAG, "Fail to reset GPIO channel : %d / Error name : %s", i, esp_err_to_name(err));
             return;
         }
-        ESP_LOGI(TAG, "Succed to reset GPIO channel : %d", i);
+        ESP_LOGI(TAG, "Succeed to reset GPIO channel : %d", i);
     }
 
     while(1) {

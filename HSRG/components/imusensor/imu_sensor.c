@@ -1,41 +1,40 @@
-// #include <stdio.h>
+#include <stdio.h>
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "imu_sensor.h"
+#include "freertos/queue.h"
+#include "driver/i2c.h"
 
-// #include "esp_log.h"
-// #include "mpu9250.h"
-// #include "driver_mpu9250.h"
-// #include "mpu9250_tests.h"
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
-// #include "driver/i2c_master.h"
+static const char* TAG = "IMU sensor";
 
-// #define TAG "mpu9250_example"
+/*
+@brief IMU sensor의 값을 받아오고 main의 Taskqueue로 보내주는 함수
+@Param[in] None
+@retval IMU sensor value
+*/
+void imu_sensor_get_value(void* pvParameters) {
+    static esp_err_t err;
+    QueueHandle_t imuQueue = (QueueHandle_t)pvParameters;
 
-// static mpu9250_handle_t mpu9250_hdl;
+    err = imu_init();
+    if(err != ESP_OK) {
+        ESP_LOGE(TAG, "failed to init imu sensor");
+        return;
+    }
+    ESP_LOGI(TAG, "succeed to init imu sensor");
+ 
+    while(1) {
+        float ax, ay, az, gx, gy, gz;
 
-// void app_main() {
+        err = imu_get(&ax, &ay, &az, &gx, &gy, &gz);
+        if(err != ESP_OK) {
+            ESP_LOGE(TAG, "failed to get imu sensor value");
+            return;
+        }
+        ESP_LOGI(TAG, "succeed to get imu sensor value");
 
-//     i2c_master_bus_config_t i2c_master_conf = {
-//             .clk_source = I2C_CLK_SRC_DEFAULT,
-//             .i2c_port = I2C_NUM_0,
-//             .sda_io_num = GPIO_NUM_44,
-//             .scl_io_num = GPIO_NUM_43,
-//             .flags.enable_internal_pullup = true,
-//             .glitch_ignore_cnt = 9,
-//     };
-//     i2c_device_config_t i2c_dev_conf = {
-//             .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-//             .device_address = 0x68,
-//             .scl_speed_hz = 400000,
-//     };
+        ESP_LOGI(TAG, "가속도 센서: %.2f %.2f %.2f  자이로 센서: %.2f %.2f %.2f\n",ax, ay, az, gx, gy, gz);
 
-//     ESP_LOGI(TAG, "init i2c...");
-//     ESP_ERROR_CHECK(mpu9250_init_i2c(&mpu9250_hdl, &i2c_master_conf, &i2c_dev_conf));
-//     ESP_LOGI(TAG, "run mpu9250_basic_read_test 10 times");
-//     ESP_ERROR_CHECK(mpu9250_basic_read_test(&mpu9250_hdl, 10));
-
-
-//     while (true) {
-//        // ESP_LOGI(TAG,"waiting...");
-//         vTaskDelay(pdMS_TO_TICKS(100));
-//     }
-// }
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}

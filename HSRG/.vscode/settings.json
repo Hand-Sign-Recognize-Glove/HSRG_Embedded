@@ -8,5 +8,8 @@
   "idf.toolsPathWin": "c:\\Espressif\\esp-idf-v4.4.8\\tools",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32"
+  },
+  "files.associations": {
+    "mpu9250.h": "c"
   }
 }

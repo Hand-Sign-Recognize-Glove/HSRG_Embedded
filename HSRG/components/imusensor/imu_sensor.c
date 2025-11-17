@@ -7,10 +7,10 @@
 
 static const char* TAG = "IMU sensor";
 
-/*
-@brief IMU sensor의 값을 받아오고 main의 Taskqueue로 보내주는 함수
-@Param[in] None
-@retval IMU sensor value
+/** 
+ * @brief IMU sensor의 값을 받아오고 main의 Taskqueue로 보내주는 함수
+ * @param[in] None
+ * @retval IMU sensor value
 */
 void imu_sensor_get_value(void* pvParameters) {
     static esp_err_t err;

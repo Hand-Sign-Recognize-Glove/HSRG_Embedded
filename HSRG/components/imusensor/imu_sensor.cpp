@@ -18,11 +18,11 @@ using namespace mpud;
 extern I2C_t i2c0;
 static MPU_t s_mpu;
 
-/*
-@brief init to imu sensor
-@param[in] None
-@retval ESP_OK, ESP_FAIL
-@details I2C를 이용한 IMU 초기화 함수
+/** 
+ * @brief init to imu sensor
+ * @param[in] None
+ * @retval ESP_OK, ESP_FAIL
+ * @details I2C를 이용한 IMU 초기화 함수
 */
 extern "C" esp_err_t imu_init() {
     esp_err_t res;

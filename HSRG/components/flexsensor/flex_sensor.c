@@ -13,19 +13,19 @@
 
 static const char* TAG = "flex Sensor";
 
-/*
-@brief flex sensor를 생성하는 데에 설정을 담은 구조체
-@details 몇 비트를 읽을 건지 결정한다. 높을수록 섬세함
+/**
+ * @brief flex sensor를 생성하는 데에 설정을 담은 구조체
+ * @details 몇 비트를 읽을 건지 결정한다. 높을수록 섬세함
          어떤 GPIO 채널을 사용할 것인지 결정한다
 */
 typedef struct { 
     adc1_channel_t channel;
 } flex_ch_t;
 
-/*
-@brief flex sensor의 기본 설정 및 값을 얻어온 후 main에 queue로 전송한다
-@param void* pvParameters 로 Task 핸들을 받아온다
-@retval flex sensor의 값을 리턴한다
+/**
+ * @brief flex sensor의 기본 설정 및 값을 얻어온 후 main에 queue로 전송한다
+ * @param void* pvParameters 로 Task 핸들을 받아온다
+ * @retval flex sensor의 값을 리턴한다
 */
 void flex_sensor_get_value(void* pvParameters) {
     esp_err_t err;

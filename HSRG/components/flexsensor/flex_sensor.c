@@ -62,7 +62,7 @@ void flex_sensor_get_value(void* pvParameters) {
 
             if (value_arr[i] == -1) {
                 ESP_LOGE(TAG, "failed to get %d : value", i);
-                return 0;
+                return;
             }
         }
        

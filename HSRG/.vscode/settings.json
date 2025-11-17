@@ -10,6 +10,7 @@
     "IDF_TARGET": "esp32"
   },
   "files.associations": {
-    "mpu9250.h": "c"
+    "mpu9250.h": "c",
+    "random": "c"
   }
 }

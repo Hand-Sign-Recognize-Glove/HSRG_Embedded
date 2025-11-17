@@ -49,6 +49,12 @@ extern "C" esp_err_t imu_init() {
     return ESP_OK;
 }
 
+/**
+ * @brief get imu sensor value
+ * @param[in] float* ax, float* ay, float* az, float* gx, float*gy, float* gz
+ * @retval ESP_OK, ESP_FAIL
+ * @details imu sensor의 값을 받아 저장하는 함수
+ */
 extern "C" esp_err_t imu_get(float* ax, float* ay, float* az, float* gx, float*gy, float* gz) {
     mpud::raw_axes_t accelRaw;
     mpud::raw_axes_t gyroRaw;

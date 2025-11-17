@@ -7,12 +7,22 @@
 
 static const char* TAG = "IMU sensor";
 
+typedef struct {
+    float ax;
+    float ay;
+    float az;
+    float gx;
+    float gy;
+    float gz;
+} imu_data_t;
+
 /** 
  * @brief IMU sensor의 값을 받아오고 main의 Taskqueue로 보내주는 함수
  * @param[in] None
  * @retval IMU sensor value
 */
 void imu_sensor_get_value(void* pvParameters) {
+    imu_data_t imu_data;
     static esp_err_t err;
     QueueHandle_t imuQueue = (QueueHandle_t)pvParameters;
 
@@ -31,10 +41,19 @@ void imu_sensor_get_value(void* pvParameters) {
             ESP_LOGE(TAG, "failed to get imu sensor value");
             return;
         }
+
+        imu_data.ax = ax;
+        imu_data.ay = ay;
+        imu_data.az = az;
+        imu_data.gx = gx;
+        imu_data.gy = gy;
+        imu_data.gz = gz;
+
         ESP_LOGI(TAG, "succeed to get imu sensor value");
-
-        ESP_LOGI(TAG, "가속도 센서: %.2f %.2f %.2f  자이로 센서: %.2f %.2f %.2f\n",ax, ay, az, gx, gy, gz);
-
         vTaskDelay(pdMS_TO_TICKS(100));
+
+        if (xQueueSend(imuQueue, &imu_data, 0)) {
+
+        }
     }
 }

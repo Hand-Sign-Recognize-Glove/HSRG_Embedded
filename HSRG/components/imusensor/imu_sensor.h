@@ -9,7 +9,7 @@ esp_err_t imu_init(void);
 
 esp_err_t imu_get(float *ax, float *ay, float *az, float *gx, float *gy, float *gz);
 
-void imu_sensor_get_value(void* pvParameters);  
+void imu_sensor_get_value(void* pvParameters) ;
 
 #ifdef __cplusplus
 }

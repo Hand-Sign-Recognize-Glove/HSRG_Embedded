@@ -1,4 +1,4 @@
 idf_component_register(
-    SRCS "esp_now.c"
+    SRCS "my_master.c" "esp_now.c"
     INCLUDE_DIRS "."
 )

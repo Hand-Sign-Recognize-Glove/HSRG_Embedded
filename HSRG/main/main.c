@@ -18,16 +18,16 @@ typedef struct {
     float gz;
 } imu_data_t;
 
-
 void app_main(void) {
     imu_data_t imuData;
+    float flex_values[5] = { -1 };
 
-    QueueHandle_t flexQueue = xQueueCreate(10, sizeof(float)); 
+    QueueHandle_t flexQueue = xQueueCreate(10, sizeof(float) * 5); 
     if (flexQueue != ESP_OK) {
         ESP_LOGE(TAG, "flex sensor failed to create new queue");
     }
 
-    QueueHandle_t imuQueue = xQueueCreate(10, sizeof(float));
+    QueueHandle_t imuQueue = xQueueCreate(10, sizeof(imu_data_t));
     if (imuQueue != ESP_OK) {
         ESP_LOGE(TAG, "imu sensor faile to create new queue");
     }
@@ -39,8 +39,13 @@ void app_main(void) {
         if(xQueueReceive(imuQueue, &imuData, portMAX_DELAY) == pdPASS) {
             ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f\n", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
         }
+        if (xQueueReceive(flexQueue, flex_values, portMAX_DELAY) == pdPASS) {
+            for(int i = 0; i < 5; i++) {
+                ESP_LOGI(TAG, "finger%d : %.2f", i, flex_values[i]);
+            }
+        }
         else {
-            ESP_LOGE(TAG, "failed to receive imuQueue data");
+            ESP_LOGE(TAG, "failed to receive imuQueue & flex data");
         }
     }
 }   

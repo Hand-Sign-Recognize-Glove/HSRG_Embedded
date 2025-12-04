@@ -13,9 +13,9 @@
 
 static const char* TAG = "flex Sensor";
 
-/*
-@brief flex sensor를 생성하는 데에 설정을 담은 구조체
-@details 몇 비트를 읽을 건지 결정한다. 높을수록 섬세함
+/**
+ * @brief flex sensor를 생성하는 데에 설정을 담은 구조체
+ * @details 몇 비트를 읽을 건지 결정한다. 높을수록 섬세함
          어떤 GPIO 채널을 사용할 것인지 결정한다
 */
 typedef struct { 

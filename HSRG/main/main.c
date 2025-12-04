@@ -18,6 +18,13 @@ typedef struct {
     float gz;
 } imu_data_t;
 
+/**
+ * @brief Task & Data Management
+ * @param[in] None
+ * @note 이 함수는 무기한으로 반복하며, 반환값이 없다
+ * @retval None
+ */
+
 void app_main(void) {
     imu_data_t imuData;
     float flex_values[5] = { -1 };

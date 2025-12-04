@@ -42,18 +42,20 @@ void imu_sensor_get_value(void* pvParameters) {
             return;
         }
 
-        imu_data.ax = ax;
+        imu_data.ax = ax; // 가속도
         imu_data.ay = ay;
         imu_data.az = az;
-        imu_data.gx = gx;
+        imu_data.gx = gx; // 자이로
         imu_data.gy = gy;
         imu_data.gz = gz;
 
         ESP_LOGI(TAG, "succeed to get imu sensor value");
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (xQueueSend(imuQueue, &imu_data, 0)) {
-
+        if ((xQueueSend(imuQueue, &imu_data, 0)) != pdPASS) {
+            ESP_LOGE(TAG, "failed to send imu data");
         }
+        
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

@@ -28,6 +28,7 @@ typedef struct {
 void app_main(void) {
     imu_data_t imuData;
     float flex_values[5] = { -1 };
+    esp_err_t err;
 
     QueueHandle_t flexQueue = xQueueCreate(10, sizeof(float) * 5); 
     if (!flexQueue) {
@@ -46,7 +47,13 @@ void app_main(void) {
 
     xTaskCreate(flex_sensor_get_value, "flex_sensor_get_value", 4096, (void*)flexQueue, 5, NULL);
     xTaskCreate(imu_sensor_get_value, "imu_sensor_get_value", 4096, (void*)imuQueue, 5, NULL);
-    xTaskCreate(espnow_task, "esp_now", 4096, NULL, 5, NULL);
+    xTaskCreate(espnow_task, "esp_now", 4096, (void*)espnowQueue, 5, NULL);
+
+    wifi_init();
+    err = espnow_init();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "failed to init espnow");
+    }
 
     while(1) {
         if(xQueueReceive(imuQueue, &imuData, portMAX_DELAY) == pdPASS) {

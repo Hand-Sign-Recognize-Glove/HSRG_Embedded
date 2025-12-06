@@ -37,12 +37,16 @@ void wifi_init() {
     ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));  
 }
 
-
+/**
+ * @brief receive the data for slave esp
+ * @param[in] const uint8_t *mac_addr, const uint8_t *data, int data_len
+ * @retval None
+ * @note need to know MAC addr (and config)
+ */
 void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
     espnow_event_t evt;
     evt.id = ESPNOW_RECV_CB;
     espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
-    uint8_t * now_mac = recv_cb->mac_addr;
 
     if (mac_addr == NULL || data == NULL || data_len <= 0) {
         ESP_LOGE(TAG, "too few arguments in Recv function call");
@@ -50,16 +54,41 @@ void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
     }
 
     evt.id = ESPNOW_RECV_CB;
-    memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN);
+    memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN); // 주소 복사
     recv_cb->data = malloc(data_len);
 
-    // Queue 전달 코드 짜기
+    if (recv_cb->data == NULL) {
+        ESP_LOGE(TAG, "Malloc Recv data fail");
+        return;
+    }
 
-}
+    memcpy(recv_cb->data, data, data_len); // 데이터 복사
+    recv_cb->data_len = data_len;
 
-void espnow_task(void *pvParameter) {
-    while(1) {
-
+    if ((xQueueSend(espnowQueue, &evt, portMAX_DELAY) != pdPASS)) {
+        ESP_LOGW(TAG, "esp now data failed to send");
+        free(recv_cb->data); 
     }
 }
 
+/**
+ * @brief ESP now main task
+ * @param[in] void *pvParameter
+ * @retval None
+ */
+void espnow_task(void *pvParameter) {
+    while(1) {
+        // 구현한 함수 호출 할 필요가 있음
+    }
+}
+
+/**
+ * @brief set up basic espnow config
+ * @param[in] None
+ * @retval esp_err_t
+ * @note enroll the cb func to register
+ */
+esp_err_t espnow_init(void) {
+    ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
+    return ESP_OK;
+}

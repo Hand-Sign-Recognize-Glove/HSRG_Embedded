@@ -1,19 +1,22 @@
-#ifndef ESPNOW_BASIC_CONFIG_H
-#define ESPNOW_BASIC_CONFIG_H
+#include <stdint.h>
 
-#include <inttypes.h>
-#include <stdbool.h>
+#define ESPNOW_WIFI_MODE WIFI_MODE_STA
+#define ESPNOW_WIFI_IF WIFI_IF_STA
 
-typedef struct __attribute__((packed)) {
-    uint32_t random_value;
-    bool button_pushed;
-} my_data_t;
+// WiFi init channel
+#define CONFIG_ESPNOW_CHANNEL 1
 
-#define MY_RECEIVER_MAC {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+// MAC addr
+#define MAC_LEN 6
+#define ESPNOW_RECV_CB 1;
 
-#define MY_ESPNOW_PMK "pmk1234567890123"
-#define MY_ESPNOW_CHANNEL 1
+typedef struct {
+    uint8_t mac_addr[MAC_LEN];
+    uint8_t *data;
+    int data_len;
+} espnow_event_recv_cb_t;
 
-#define MY_SLAVE_DEEP_SLEEP_TIME_MS 10000
-
-#endif 
+typedef struct {
+    uint32_t id;
+    espnow_event_recv_cb_t recv_cb;
+} espnow_event_t;

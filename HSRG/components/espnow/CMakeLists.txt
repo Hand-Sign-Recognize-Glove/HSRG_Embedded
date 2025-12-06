@@ -1,4 +1,5 @@
 idf_component_register(
-    SRCS "my_master.c" "esp_now.c"
+    SRCS "esp_now.c"
+    PRIV_REQUIRES nvs_flash esp_event esp_netif esp_wifi
     INCLUDE_DIRS "."
 )

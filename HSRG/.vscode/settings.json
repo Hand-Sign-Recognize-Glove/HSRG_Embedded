@@ -12,7 +12,13 @@
   "files.associations": {
     "mpu9250.h": "c",
     "random": "c",
-    "queue.h": "c"
+    "queue.h": "c",
+    "*.inc": "c",
+    "esp_mac.h": "c",
+    "esp_log.h": "c",
+    "adc.h": "c",
+    "esp_now.h": "c",
+    "freertos.h": "c"
   },
   "idf.flashType": "UART"
 }

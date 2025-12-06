@@ -72,6 +72,15 @@ void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
 }
 
 /**
+ * @brief parse the espnow snet data
+ * @param[in] uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, uint32_t *magic
+ * @retval int
+ */
+int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, uint32_t *magic) {
+    return 1;
+}
+
+/**
  * @brief ESP now main task
  * @param[in] void *pvParameter
  * @retval None

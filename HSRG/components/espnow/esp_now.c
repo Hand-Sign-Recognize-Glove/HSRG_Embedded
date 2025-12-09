@@ -17,6 +17,7 @@
 #include "esp_crc.h"
 
 static const char* TAG = "esp now";
+
 QueueHandle_t espnowQueue = NULL;
 
 /**
@@ -114,11 +115,29 @@ void espnow_task(void *pvParameter) {
  * @brief set up basic espnow config
  * @param[in] None
  * @retval esp_err_t
- * @note enroll the cb func to register
+ * @note enroll the cb func to register 
  */
 esp_err_t espnow_init(void) {
+    ESP_ERROR_CHECK(esp_now_init());
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
-    return ESP_OK;
+
+    // set primary master key
+    ESP_ERROR_CHECK(esp_now_set_pmk((uint8_t *)ESPNOW_PMK));
+    
+    esp_now_peer_info_t *peer = malloc(sizeof(esp_now_peer_info_t));
+    if (peer == NULL) {
+        ESP_LOGE(TAG, "Malloc peer information fail");
+        vQueueDelete(espnowQueue);
+        espnowQueue = NULL;
+        espnow_deinit();
+        return ESP_FAIL;
+    }
+}
+
+static void espnow_deinit(void) {
+    vQueueDelete(espnowQueue);
+    espnowQueue = NULL;
+    esp_now_deinit();
 }
 
 // https://github.com/espressif/esp-idf/blob/master/examples/wifi/espnow/main/espnow_example.h

@@ -8,7 +8,8 @@
 
 // MAC addr
 #define MAC_LEN 6
-#define ESPNOW_RECV_CB 1;
+#define ESPNOW_RECV_CB 1
+#define ESPNOW_PMK "1fA9cD83eL02pQxZ"
 
 typedef struct {
     uint8_t mac_addr[MAC_LEN];

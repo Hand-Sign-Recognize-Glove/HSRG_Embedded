@@ -77,7 +77,26 @@ void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
  * @retval int
  */
 int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, uint32_t *magic) {
-    return 1;
+    espnow_data_t *buf = (espnow_data_t *)data;
+    uint16_t crc, crc_cal = 0;
+
+    if (data_len < sizeof(espnow_data_t)) {
+        ESP_LOGE(TAG, "Recv data is too short, LEN : %d", data_len);
+        return -1;
+    }
+
+    *state = buf->state;
+    *seq = buf->seq_num;
+    *magic = buf->magic;
+    crc = buf->crc;
+    buf->crc = 0;
+    crc_cal = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, data_len);
+
+    if (crc_cal == crc) {
+        return buf->type;
+    }
+
+    return -1;
 }
 
 /**
@@ -101,3 +120,5 @@ esp_err_t espnow_init(void) {
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
     return ESP_OK;
 }
+
+// https://github.com/espressif/esp-idf/blob/master/examples/wifi/espnow/main/espnow_example.h

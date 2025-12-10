@@ -106,42 +106,43 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
  * @param[in] void *pvParameter
  * @retval None
  */
-void espnow_task(void *pvParameter) {
+void espnow_task(void *pvParameter)
+{
+    QueueHandle_t parsedQueue = (QueueHandle_t)pvParameter;   // main으로 보낼 queue
     espnow_event_t evt;
     uint8_t recv_state = 0;
     uint16_t recv_seq = 0;
     uint32_t recv_magic = 0;
 
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
-    ESP_LOGI(TAG, "sending espnow data");
+    while (1) {
+        if (xQueueReceive(espnowQueue, &evt, portMAX_DELAY) != pdPASS) {
+            continue;
+        }
 
-    while(1) {
-        if (xQueueReceive(espnowQueue, &evt, portMAX_DELAY) == pdTRUE) {
+        espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
 
-            espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
+        int type = espnow_data_parse(
+            recv_cb->data,
+            recv_cb->data_len,
+            &recv_state,
+            &recv_seq,
+            &recv_magic
+        );
 
-            int type = espnow_data_parse(recv_cb->data, recv_cb->data_len, &recv_state, &recv_seq, &recv_magic);
+        if (type >= 0) {
+            xQueueSend(parsedQueue, &evt, 0);
+        }
 
-            if (type >= 0) {
-                ESP_LOGI(TAG, "RECV type=%d seq=%d magic=%u FROM " MACSTR " len=%d", type, recv_seq, recv_magic, MAC2STR(recv_cb->mac_addr), recv_cb->data_len);
-            }
-            else {
-                ESP_LOGW(TAG, "Invalid packet from " MACSTR, MAC2STR(recv_cb->mac_addr));
-            }
-
-            // peer auto register (선택)
-            if (!esp_now_is_peer_exist(recv_cb->mac_addr)) {
-                esp_now_peer_info_t peer = {0};
-                memcpy(peer.peer_addr, recv_cb->mac_addr, MAC_LEN);
-                peer.channel = CONFIG_ESPNOW_CHANNEL;
-                peer.encrypt = false;
-                esp_now_add_peer(&peer);
-            }
-
-            free(recv_cb->data);
+        if (!esp_now_is_peer_exist(recv_cb->mac_addr)) {
+            esp_now_peer_info_t peer = {0};
+            memcpy(peer.peer_addr, recv_cb->mac_addr, MAC_LEN);
+            peer.channel = CONFIG_ESPNOW_CHANNEL;
+            peer.encrypt = false;
+            esp_now_add_peer(&peer);
         }
     }
 }
+
 
 /**
  * @brief set up basic espnow config

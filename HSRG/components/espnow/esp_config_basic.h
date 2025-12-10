@@ -11,6 +11,8 @@
 #define ESPNOW_RECV_CB 1
 #define ESPNOW_PMK "1fA9cD83eL02pQxZ"
 
+extern uint8_t peer_mac[6];
+
 typedef struct {
     uint8_t mac_addr[MAC_LEN];
     uint8_t *data;

@@ -19,6 +19,7 @@
 static const char* TAG = "esp now";
 
 QueueHandle_t espnowQueue = NULL;
+uint8_t peer_mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 /**
  * @brief init wifi func
@@ -132,6 +133,16 @@ esp_err_t espnow_init(void) {
         espnow_deinit();
         return ESP_FAIL;
     }
+
+    memset(peer, 0, sizeof(esp_now_peer_info_t));
+    peer->channel = CONFIG_ESPNOW_CHANNEL; // WiFi 채널
+    peer->ifidx = ESPNOW_WIFI_IF; // 인터페이스 타입
+    peer->encrypt = false; // 암호화 여부
+    memcpy(peer->peer_addr, peer_mac, MAC_LEN);
+    ESP_ERROR_CHECK(esp_now_add_peer(peer));
+    free(peer);
+
+    return ESP_OK;
 }
 
 static void espnow_deinit(void) {

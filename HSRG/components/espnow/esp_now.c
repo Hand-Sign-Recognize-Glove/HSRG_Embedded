@@ -19,7 +19,7 @@
 static const char* TAG = "esp now";
 
 QueueHandle_t espnowQueue = NULL;
-uint8_t peer_mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+uint8_t peer_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /**
  * @brief init wifi func
@@ -107,18 +107,55 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
  * @retval None
  */
 void espnow_task(void *pvParameter) {
+    espnow_event_t evt;
+    uint8_t recv_state = 0;
+    uint16_t recv_seq = 0;
+    uint32_t recv_magic = 0;
+
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    ESP_LOGI(TAG, "sending espnow data");
+
     while(1) {
-        // 구현한 함수 호출 할 필요가 있음
+        if (xQueueReceive(espnowQueue, &evt, portMAX_DELAY) == pdTRUE) {
+
+            espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
+
+            int type = espnow_data_parse(recv_cb->data, recv_cb->data_len, &recv_state, &recv_seq, &recv_magic);
+
+            if (type >= 0) {
+                ESP_LOGI(TAG, "RECV type=%d seq=%d magic=%u FROM " MACSTR " len=%d", type, recv_seq, recv_magic, MAC2STR(recv_cb->mac_addr), recv_cb->data_len);
+            }
+            else {
+                ESP_LOGW(TAG, "Invalid packet from " MACSTR, MAC2STR(recv_cb->mac_addr));
+            }
+
+            // peer auto register (선택)
+            if (!esp_now_is_peer_exist(recv_cb->mac_addr)) {
+                esp_now_peer_info_t peer = {0};
+                memcpy(peer.peer_addr, recv_cb->mac_addr, MAC_LEN);
+                peer.channel = CONFIG_ESPNOW_CHANNEL;
+                peer.encrypt = false;
+                esp_now_add_peer(&peer);
+            }
+
+            free(recv_cb->data);
+        }
     }
 }
 
 /**
  * @brief set up basic espnow config
  * @param[in] None
- * @retval esp_err_t
+ * @retval void
  * @note enroll the cb func to register 
  */
-esp_err_t espnow_init(void) {
+void espnow_init(void) { 
+    espnowQueue = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(espnow_event_t));
+    if (espnowQueue == NULL) {
+        ESP_LOGE(TAG, "failed to Create new queue");
+        return;
+    }
+
     ESP_ERROR_CHECK(esp_now_init());
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
 
@@ -131,7 +168,7 @@ esp_err_t espnow_init(void) {
         vQueueDelete(espnowQueue);
         espnowQueue = NULL;
         espnow_deinit();
-        return ESP_FAIL;
+        return;
     }
 
     memset(peer, 0, sizeof(esp_now_peer_info_t));
@@ -142,13 +179,23 @@ esp_err_t espnow_init(void) {
     ESP_ERROR_CHECK(esp_now_add_peer(peer));
     free(peer);
 
-    return ESP_OK;
+    ESP_LOGI(TAG, "Initialization successful");
 }
 
-static void espnow_deinit(void) {
+/**
+ * @brief deinit the espnowQueue
+ * @param[in] None
+ * @retval None
+ */
+void espnow_deinit(void) {
+    esp_err_t err;
+
     vQueueDelete(espnowQueue);
     espnowQueue = NULL;
-    esp_now_deinit();
+    err = esp_now_deinit();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "failed to deinit espnow");
+        return;
+    }
 }
 
-// https://github.com/espressif/esp-idf/blob/master/examples/wifi/espnow/main/espnow_example.h

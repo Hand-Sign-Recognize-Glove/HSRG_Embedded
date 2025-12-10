@@ -28,7 +28,6 @@ typedef struct {
 void app_main(void) {
     imu_data_t imuData;
     float flex_values[5] = { -1 };
-    esp_err_t err;
 
     QueueHandle_t flexQueue = xQueueCreate(10, sizeof(float) * 5); 
     if (!flexQueue) {
@@ -50,13 +49,11 @@ void app_main(void) {
     xTaskCreate(espnow_task, "esp_now", 4096, (void*)espnowQueue, 5, NULL);
 
     wifi_init();
-    err = espnow_init();
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "failed to init espnow");
-    }
+    espnow_deinit();
+    espnow_init();
 
     while(1) {
-        if(xQueueReceive(imuQueue, &imuData, portMAX_DELAY) == pdPASS) {
+        if (xQueueReceive(imuQueue, &imuData, portMAX_DELAY) == pdPASS) {
             ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f\n", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
         }
         if (xQueueReceive(flexQueue, flex_values, portMAX_DELAY) == pdPASS) {
@@ -64,8 +61,11 @@ void app_main(void) {
                 ESP_LOGI(TAG, "finger%d : %.2f", i, flex_values[i]);
             }
         }
-        else {
-            ESP_LOGE(TAG, "failed to receive imuQueue & flex data");
-        }
+        // if (xQueueReceive(espnowQueue, ,portMAX_DELAY) == pdPASS) {
+
+        // }   
+        // else {
+        //     ESP_LOGE(TAG, "failed to receive imuQueue & flex data");
+        // }
     }
 }   

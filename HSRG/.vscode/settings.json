@@ -18,7 +18,8 @@
     "esp_log.h": "c",
     "adc.h": "c",
     "esp_now.h": "c",
-    "freertos.h": "c"
+    "freertos.h": "c",
+    "nimble_port.h": "c"
   },
   "idf.flashType": "UART"
 }

@@ -56,18 +56,16 @@ void app_main(void) {
     while(1) {
         if (xQueueReceive(imuQueue, &imuData, 0) == pdPASS) {
             ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f\n", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
-        }
+        } 
         if (xQueueReceive(flexQueue, flex_values, 0) == pdPASS) {
             for(int i = 0; i < 5; i++) {
                 ESP_LOGI(TAG, "finger%d : %.2f", i, flex_values[i]);
             }
         }
         if (xQueueReceive(espnowDataQueue, &evt, 0) == pdPASS) {   
-            espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
             espnow_data_t *buf = (espnow_data_t *)evt.recv_cb.data;
 
             ESP_LOGI(TAG, "recv: type=%d seq=%d magic=%d", buf->type, buf->seq_num, buf->magic);
-            free(recv_cb->data);  
         } 
     }
 }   

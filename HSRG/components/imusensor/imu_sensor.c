@@ -26,36 +26,37 @@ void imu_sensor_get_value(void* pvParameters) {
     static esp_err_t err;
     QueueHandle_t imuQueue = (QueueHandle_t)pvParameters;
 
-    err = imu_init();
-    if(err != ESP_OK) {
-        ESP_LOGE(TAG, "failed to init imu sensor");
-        return;
-    }
-    ESP_LOGI(TAG, "succeed to init imu sensor");
- 
-    while(1) {
-        float ax, ay, az, gx, gy, gz;
-
-        err = imu_get(&ax, &ay, &az, &gx, &gy, &gz);
+    while (1) {
+        err = imu_init();
         if(err != ESP_OK) {
-            ESP_LOGE(TAG, "failed to get imu sensor value");
-            return;
+            ESP_LOGE(TAG, "failed to init imu sensor");
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            continue;
         }
+        ESP_LOGI(TAG, "succeed to init imu sensor");
+    
+        while(1) {
+            float ax, ay, az, gx, gy, gz;
 
-        imu_data.ax = ax; // 가속도
-        imu_data.ay = ay;
-        imu_data.az = az;
-        imu_data.gx = gx; // 자이로
-        imu_data.gy = gy;
-        imu_data.gz = gz;
+            err = imu_get(&ax, &ay, &az, &gx, &gy, &gz);
+            if(err != ESP_OK) {
+                ESP_LOGE(TAG, "failed to get imu sensor value");
+                break; ;
+            }
 
-        ESP_LOGI(TAG, "succeed to get imu sensor value");
-        vTaskDelay(pdMS_TO_TICKS(100));
+            imu_data.ax = ax; // 가속도
+            imu_data.ay = ay;
+            imu_data.az = az;
+            imu_data.gx = gx; // 자이로
+            imu_data.gy = gy;
+            imu_data.gz = gz;
 
-        if ((xQueueSend(imuQueue, &imu_data, 0)) != pdPASS) {
-            ESP_LOGE(TAG, "failed to send imu data");
+            ESP_LOGI(TAG, "succeed to get imu sensor value");
+            if ((xQueueSend(imuQueue, &imu_data, 0)) != pdPASS) {
+                ESP_LOGE(TAG, "failed to send imu data");
+            }
+            
+            vTaskDelay(pdMS_TO_TICKS(100));
         }
-        
-        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

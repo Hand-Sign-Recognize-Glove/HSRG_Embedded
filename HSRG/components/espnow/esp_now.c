@@ -108,7 +108,7 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
  */
 void espnow_task(void *pvParameter)
 {
-    QueueHandle_t parsedQueue = (QueueHandle_t)pvParameter;   // main으로 보낼 queue
+    QueueHandle_t parsedQueue = (QueueHandle_t)pvParameter;  
     espnow_event_t evt;
     uint8_t recv_state = 0;
     uint16_t recv_seq = 0;
@@ -130,19 +130,22 @@ void espnow_task(void *pvParameter)
         );
 
         if (type >= 0) {
-            xQueueSend(parsedQueue, &evt, 0);
+            espnow_event_t evt_copy = evt;
+
+            evt_copy.recv_cb.data = malloc(recv_cb->data_len);
+            if (evt_copy.recv_cb.data == NULL) {
+                ESP_LOGE(TAG, "malloc failed while deep copying");
+            } else {
+                memcpy(evt_copy.recv_cb.data, recv_cb->data, recv_cb->data_len);
+            }
+            xQueueSend(parsedQueue, &evt_copy, 0);
         }
 
-        if (!esp_now_is_peer_exist(recv_cb->mac_addr)) {
-            esp_now_peer_info_t peer = {0};
-            memcpy(peer.peer_addr, recv_cb->mac_addr, MAC_LEN);
-            peer.channel = CONFIG_ESPNOW_CHANNEL;
-            peer.encrypt = false;
-            esp_now_add_peer(&peer);
-        }
+        free(recv_cb->data);
+        recv_cb->data = NULL;
     }
 }
-
+ 
 
 /**
  * @brief set up basic espnow config

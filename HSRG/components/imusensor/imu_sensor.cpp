@@ -8,7 +8,7 @@ extern "C" {
 #include "mpu/math.hpp"
 #include "I2Cbus.hpp"
 
-#define SDA 21
+#define SDA 21 // 핀 알맞게 설정
 #define SCL 22
 
 static const char* TAG = "imu bridgge";

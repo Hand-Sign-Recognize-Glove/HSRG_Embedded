@@ -16,7 +16,7 @@ static uint8_t own_addr_type;
  * @param[in] struct ble_gap_event *event, void *arg
  * @retval int
  */
-static int gap_event_cb(struct ble_gap_event *event, void *arg) {
+int gap_event_cb(struct ble_gap_event *event, void *arg) {
     switch (event->type) {
     
     case BLE_GAP_EVENT_CONNECT:
@@ -46,7 +46,7 @@ static int gap_event_cb(struct ble_gap_event *event, void *arg) {
  * @param[in] None
  * @retval None 
  */
-static void start_ad(void) {
+void start_ad(void) {
     struct ble_gap_adv_params adv_params = { 0 };
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
@@ -79,13 +79,13 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
     { 0 } 
 };
 
-static void ble_app_on_sync(void)
+void ble_app_on_sync(void)
 {
     ble_hs_id_infer_auto(0, &own_addr_type);
     start_ad();
 }
 
-static void host_task(void *param)
+void host_task(void *param)
 {
     nimble_port_run();
     nimble_port_freertos_deinit();

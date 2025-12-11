@@ -7,6 +7,7 @@
 #include "freertos/queue.h"
 #include "driver/adc.h"
 #include "esp_now_set.h"
+#include "ble.h"
 
 static const char* TAG = "Main Task";
 
@@ -48,6 +49,7 @@ void app_main(void) {
     xTaskCreate(flex_sensor_get_value, "flex_sensor_get_value", 4096, (void*)flexQueue, 5, NULL);
     xTaskCreate(imu_sensor_get_value, "imu_sensor_get_value", 4096, (void*)imuQueue, 5, NULL);
     xTaskCreate(espnow_task, "esp_now", 4096, (void*)espnowDataQueue, 5, NULL);
+    vTastCreate(ble_main_task, "ble_main_task", 4096, NULL, 5, NULL);
 
     wifi_init();
     espnow_deinit();

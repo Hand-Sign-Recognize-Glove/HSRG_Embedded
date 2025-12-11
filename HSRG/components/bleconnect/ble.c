@@ -63,8 +63,41 @@ static void start_ad(void) {
     ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, NULL, gap_event_cb, NULL);
 }
 
+static const struct ble_gatt_svc_def gatt_svcs[] = {
+    {
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = BLE_UUID16_DECLARE(0x180F), 
+        .characteristics = (struct ble_gatt_chr_def[]) {
+            {
+                .uuid = BLE_UUID16_DECLARE(0x2A19), 
+                .access_cb = NULL,
+                .flags = BLE_GATT_CHR_F_READ,
+            }, 
+            { 0 } 
+        } 
+    }, 
+    { 0 } 
+};
+
+static void ble_app_on_sync(void)
+{
+    ble_hs_id_infer_auto(0, &own_addr_type);
+    start_ad();
+}
+
+static void host_task(void *param)
+{
+    nimble_port_run();
+    nimble_port_freertos_deinit();
+}
+
+
 void ble_main_task(void) {
     ESP_ERROR_CHECK(esp_nimble_hci_and_controller_init());
     nimble_port_init();
 
+    ble_hs_cfg.sync_cb = ble_app_on_sync;
+    ble_gatts_count_cfg(gatt_svcs);
+    ble_gatts_add_svcs(gatt_svcs);
+    nimble_port_freertos_init(host_task);
 }

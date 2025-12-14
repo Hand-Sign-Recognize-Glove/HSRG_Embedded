@@ -10,6 +10,12 @@
 
 static const char* TAG = "BLE protocol";
 static uint8_t own_addr_type;
+static uint16_t g_conn_handle = BLE_HS_CONN_HANDLE_NONE;
+static uint16_t g_chr_handle;
+static bool notify_enabled = false;
+
+#define MY_SERVICE_UUID 0xFFF0
+#define MY_CHAR_UUID 0xFFF1
 
 /**
  * @brief Ble callback func
@@ -21,6 +27,7 @@ int gap_event_cb(struct ble_gap_event *event, void *arg) {
     
     case BLE_GAP_EVENT_CONNECT:
         if(event->connect.status == 0) {
+            g_conn_handle = event->connect.conn_handle;
             ESP_LOGI(TAG, "ble is connected");
         }
         else {
@@ -30,6 +37,9 @@ int gap_event_cb(struct ble_gap_event *event, void *arg) {
         break;
 
     case BLE_GAP_EVENT_DISCONNECT:
+        g_conn_handle = BLE_HS_CONN_HANDLE_NONE;
+        notify_enabled = false;
+
         ESP_LOGI(TAG, "Disconnected \n restarting advertising");
         ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, NULL, gap_event_cb, NULL);
 
@@ -63,15 +73,24 @@ void start_ad(void) {
     ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, NULL, gap_event_cb, NULL);
 }
 
+void ble_send_string(const char* str) {
+    if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE) return;
+    if (!notify_enabled) return;
+
+    struct os_mbuf *om = ble_hs_mbuf_from_flat(str, strlen(str));
+    ble_gatts_notify_custom(g_conn_handle, g_chr_handle, om);
+}
+
 static const struct ble_gatt_svc_def gatt_svcs[] = {
     {
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
-        .uuid = BLE_UUID16_DECLARE(0x180F), 
+        .uuid = BLE_UUID16_DECLARE(MY_SERVICE_UUID), 
         .characteristics = (struct ble_gatt_chr_def[]) {
             {
-                .uuid = BLE_UUID16_DECLARE(0x2A19), 
+                .uuid = BLE_UUID16_DECLARE(MY_CHAR_UUID), 
                 .access_cb = NULL,
-                .flags = BLE_GATT_CHR_F_READ,
+                .flags = BLE_GATT_CHR_F_NOTIFY,
+                .val_handle = &g_chr_handle,
             }, 
             { 0 } 
         } 

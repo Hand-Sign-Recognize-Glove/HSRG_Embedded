@@ -7,6 +7,7 @@
 #include "host/ble_gap.h"
 #include "esp_nimble_hci.h"
 #include "esp_log.h"
+#include "string.h"
 
 static const char* TAG = "BLE protocol";
 static uint8_t own_addr_type;
@@ -73,14 +74,29 @@ void start_ad(void) {
     ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, NULL, gap_event_cb, NULL);
 }
 
+/**
+ * @brief send the string to phone
+ * @param[in] const char* data
+ * @retval None
+ */
 void ble_send_string(const char* data) {
     if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE) return;
     if (!notify_enabled) return;
 
     struct os_mbuf *om = ble_hs_mbuf_from_flat(data, strlen(data));
+    if (!om) {
+        ESP_LOGE(TAG, "failed to copy mbuf");
+        return;
+    }
+
     ble_gatts_notify_custom(g_conn_handle, g_chr_handle, om);
 }
 
+/**
+ * @brief access cb func, convert true/false
+ * @param[in] uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg
+ * @retval int
+ */
 int chr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
     if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_DSC) {
         uint16_t v = ctxt->om->om_data[1] << 8 | ctxt->om->om_data[0];
@@ -91,7 +107,6 @@ int chr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_ac
     }
     return 0;
 }
-
 
 static const struct ble_gatt_svc_def gatt_svcs[] = {
     {

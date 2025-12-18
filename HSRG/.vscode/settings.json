@@ -1,11 +1,11 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.espIdfPathWin": "c:\\Espressif\\esp-idf-v4.4.8\\v4.4.8\\esp-idf",
-  "idf.pythonInstallPath": "c:\\Espressif\\esp-idf-v4.4.8\\tools\\tools\\idf-python\\3.8.7\\python.exe",
+  "idf.espIdfPathWin": "c:\\Users\\user\\Espressif\\frameworks\\esp-idf-v4.4.8",
+  "idf.pythonInstallPath": "C:\\Users\\user\\.espressif\\tools\\idf-python\\3.8.7\\python.exe",
   "idf.openOcdConfigs": [
     "board/esp32-wrover-kit-3.3v.cfg"
   ],
-  "idf.toolsPathWin": "c:\\Espressif\\esp-idf-v4.4.8\\tools",
+  "idf.toolsPathWin": "C:\\Users\\user\\.espressif",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32"
   }

@@ -138,7 +138,7 @@ void host_task(void *param)
 }
 
 
-void ble_main_task(void) {
+void ble_main_task(void* pvParameter) {
     nimble_port_init();
 
     ble_hs_cfg.sync_cb = ble_app_on_sync;

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "esp_now.h"
 #include "freertos/timers.h"
 #include "nvs_flash.h"
 #include "esp_random.h"
@@ -13,7 +14,6 @@
 #include "esp_log.h"
 #include "esp_now_set.h"
 #include "esp_mac.h"
-#include "esp_now.h"
 #include "esp_crc.h"
 
 static const char* TAG = "esp now";
@@ -45,6 +45,12 @@ void wifi_init() {
  * @retval None
  * @note need to know MAC addr (and config)
  */
+
+#include "esp_now.h"
+static void espnow_recv_cb_idf5(const esp_now_recv_info_t * recv_info, const uint8_t * data, int len) {
+    espnow_recv_cb(recv_info->src_addr, data, len);
+}
+
 void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
     espnow_event_t evt;
     evt.id = ESPNOW_RECV_CB;
@@ -161,7 +167,7 @@ void espnow_init(void) {
     }
 
     ESP_ERROR_CHECK(esp_now_init());
-    ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
+    ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb_idf5));
 
     // set primary master key
     ESP_ERROR_CHECK(esp_now_set_pmk((uint8_t *)ESPNOW_PMK));

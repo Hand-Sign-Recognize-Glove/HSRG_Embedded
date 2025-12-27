@@ -139,7 +139,6 @@ void host_task(void *param)
 
 
 void ble_main_task(void) {
-    ESP_ERROR_CHECK(esp_nimble_hci_and_controller_init());
     nimble_port_init();
 
     ble_hs_cfg.sync_cb = ble_app_on_sync;

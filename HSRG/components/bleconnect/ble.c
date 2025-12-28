@@ -1,13 +1,19 @@
 #include <stdio.h>
+#include <string.h>
+
+#include "esp_log.h"
+
 #include "nimble/ble.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
+
 #include "host/ble_hs.h"
-#include "host/ble_uuid.h"
 #include "host/ble_gap.h"
-#include "esp_nimble_hci.h"
-#include "esp_log.h"
-#include "string.h"
+#include "host/ble_gatt.h"
+#include "host/ble_uuid.h"
+
+#include "services/gap/ble_svc_gap.h"
+#include "services/gatt/ble_svc_gatt.h"
 
 static const char* TAG = "BLE protocol";
 static uint8_t own_addr_type;

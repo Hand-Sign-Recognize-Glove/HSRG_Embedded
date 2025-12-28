@@ -14,7 +14,7 @@ typedef struct {
     float gx;
     float gy;
     float gz;
-} imu_data_t;
+} imu_data_t; 
 
 /** 
  * @brief IMU sensor의 값을 받아오고 main의 Taskqueue로 보내주는 함수

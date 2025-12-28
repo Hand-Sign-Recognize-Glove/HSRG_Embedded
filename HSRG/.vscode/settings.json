@@ -7,7 +7,7 @@
   ],
   "idf.toolsPathWin": "C:\\Espressif",
   "idf.customExtraVars": {
-    "IDF_TARGET": "esp32"
+    "IDF_TARGET": "esp32c3"
   },
   "files.associations": {
     "mpu9250.h": "c",
@@ -21,5 +21,11 @@
     "freertos.h": "c",
     "nimble_port.h": "c"
   },
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "clangd.path": "C:\\Espressif\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=c:\\HSRG_Embedded\\HSRG\\build"
+  ]
 }

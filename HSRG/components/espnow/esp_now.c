@@ -32,6 +32,7 @@ void wifi_init() {
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(ESPNOW_WIFI_MODE));
@@ -52,30 +53,30 @@ static void espnow_recv_cb_idf5(const esp_now_recv_info_t * recv_info, const uin
 }
 
 void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
-    espnow_event_t evt;
-    evt.id = ESPNOW_RECV_CB;
-    espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
-
     if (mac_addr == NULL || data == NULL || data_len <= 0) {
         ESP_LOGE(TAG, "too few arguments in Recv function call");
         return;
     }
-
+    
+    espnow_event_t evt = { 0 };
     evt.id = ESPNOW_RECV_CB;
-    memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN); // 주소 복사
-    recv_cb->data = malloc(data_len);
+    espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
 
-    if (recv_cb->data == NULL) {
-        ESP_LOGE(TAG, "Malloc Recv data fail");
+    memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN); // 주소 복사
+    uint8_t *buf = pvPortMalloc(data_len);
+
+    if (!buf) {
+        ESP_LOGE(TAG, "malloc failed");
         return;
     }
 
-    memcpy(recv_cb->data, data, data_len); // 데이터 복사
+    memcpy(buf, data, data_len); // 데이터 복사
+    recv_cb->data = buf;
     recv_cb->data_len = data_len;
 
-    if ((xQueueSend(espnowQueue, &evt, portMAX_DELAY) != pdPASS)) {
+    if ((xQueueSend(espnowQueue, &evt, 0) != pdPASS)) {
         ESP_LOGW(TAG, "esp now data failed to send");
-        free(recv_cb->data); 
+        vPortFree(buf);
     }
 }
 
@@ -91,16 +92,17 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
     if (data_len < sizeof(espnow_data_t)) {
         ESP_LOGE(TAG, "Recv data is too short, LEN : %d", data_len);
         return -1;
-    }
+    }   
 
+    uint16_t crc_rx = buf->crc;
     *state = buf->state;
     *seq = buf->seq_num;
     *magic = buf->magic;
-    crc = buf->crc;
     buf->crc = 0;
     crc_cal = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, data_len);
+    buf->crc = crc_rx;
 
-    if (crc_cal == crc) {
+    if (crc_cal == crc_rx) {
         return buf->type;
     }
 
@@ -138,7 +140,7 @@ void espnow_task(void *pvParameter)
         if (type >= 0) {
             espnow_event_t evt_copy = evt;
 
-            evt_copy.recv_cb.data = malloc(recv_cb->data_len);
+            evt_copy.recv_cb.data = pvPortMalloc(recv_cb->data_len);
             if (evt_copy.recv_cb.data == NULL) {
                 ESP_LOGE(TAG, "malloc failed while deep copying");
             } else {
@@ -147,7 +149,7 @@ void espnow_task(void *pvParameter)
             xQueueSend(parsedQueue, &evt_copy, 0);
         }
 
-        free(recv_cb->data);
+        vPortFree(recv_cb->data);
         recv_cb->data = NULL;
     }
 }

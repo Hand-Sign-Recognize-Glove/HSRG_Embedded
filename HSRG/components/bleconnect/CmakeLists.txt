@@ -1,5 +1,5 @@
 idf_component_register(
     SRCS "ble.c"
     INCLUDE_DIRS "."
-    REQUIRES bt 
+    REQUIRES bt freertos esp_event nvs_flash
 )

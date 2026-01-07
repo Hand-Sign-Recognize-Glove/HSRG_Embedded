@@ -3,7 +3,6 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "imu_sensor.h"
 #include "freertos/queue.h"
 #include "driver/adc.h"
 #include "esp_now_set.h"
@@ -36,10 +35,10 @@ void app_main(void) {
         ESP_LOGE(TAG, "flex sensor failed to create new queue");
     }
  
-    QueueHandle_t imuQueue = xQueueCreate(10, sizeof(imu_data_t));
-    if (!imuQueue) {
-        ESP_LOGE(TAG, "imu sensor faile to create new queue");
-    }
+    // QueueHandle_t imuQueue = xQueueCreate(10, sizeof(imu_data_t));
+    // if (!imuQueue) {
+    //     ESP_LOGE(TAG, "imu sensor faile to create new queue");
+    // }
 
     QueueHandle_t espnowDataQueue = xQueueCreate(10, sizeof(espnow_event_t));
     if (!espnowDataQueue) {
@@ -47,7 +46,7 @@ void app_main(void) {
     }
 
     xTaskCreate(flex_sensor_get_value, "flex_sensor_get_value", 4096, (void*)flexQueue, 5, NULL);
-    xTaskCreate(imu_sensor_get_value, "imu_sensor_get_value", 4096, (void*)imuQueue, 5, NULL);
+    // xTaskCreate(imu_sensor_get_value, "imu_sensor_get_value", 4096, (void*)imuQueue, 5, NULL);
     xTaskCreate(espnow_task, "esp_now", 4096, (void*)espnowDataQueue, 5, NULL);
     xTaskCreate(ble_main_task, "ble_main_task", 4096, NULL, 5, NULL);
 
@@ -56,9 +55,9 @@ void app_main(void) {
     espnow_init();
 
     while(1) {
-        if (xQueueReceive(imuQueue, &imuData, 0) == pdPASS) {
-            ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f\n", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
-        } 
+        // if (xQueueReceive(imuQueue, &imuData, 0) == pdPASS) {
+        //     ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f\n", imuData.ax, imuData.ay, imuData.az, imuData.gx, imuData.gy, imuData.gz);
+        // } 
         if (xQueueReceive(flexQueue, flex_values, 0) == pdPASS) {
             for(int i = 0; i < 5; i++) {
                 ESP_LOGI(TAG, "finger%d : %.2f", i, flex_values[i]);

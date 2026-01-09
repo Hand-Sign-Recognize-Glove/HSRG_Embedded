@@ -4,9 +4,25 @@
 #define GPIO_SCL_NUM GPIO_NUM_25
 #define I2C_PORT_NUM I2C_NUM_0
 
+typedef struct {   
+    int16_t accel_raw[1][3];
+    float   accel_g[1][3];
+    int16_t gyro_raw[1][3];
+    float   gyro_dps[1][3];
+    int16_t mag_raw[1][3];
+    float   mag_ut[1][3];
+} imuData;
+
 /**
  * @brief imu sensor init func
  * @param[in] None
  * @retval None
  */
 void imu_sensor_init(void);
+
+/**
+ * @brief imu sensor get data
+ * @param[in] None
+ * @retval None
+ *  */
+void imu_sensor_get_data(void);

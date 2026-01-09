@@ -11,7 +11,6 @@
 #include "imu_sensor.h"
 
 static const char *TAG = "IMU sensor";
-
 static mpu9250_handle_t mpu9250_hdl;
 
 i2c_master_bus_config_t i2c_master_conf = {
@@ -29,15 +28,35 @@ i2c_device_config_t i2c_dev_conf = {
             .scl_speed_hz = 400000,
 };
 
+void imu_sensor_get_data() {
+    imuData data;
+    uint16_t len = 1;
+
+    uint8_t ret = mpu9250_read(
+    &mpu9250_hdl, 
+    data.accel_raw, data.accel_g,
+    data.gyro_raw,  data.gyro_dps,
+    data.mag_raw,   data.mag_ut, 
+    &len);
+
+    if (ret != 0) {
+        ESP_LOGE(TAG, "failed to get imu data (%d)", ret);
+        return;
+    }
+    ESP_LOGI(TAG, "");
+}
+
 void imu_sensor_init() {
-    esp_err_t err;
+    uint8_t err;
+
+    ESP_ERROR_CHECK(mpu9250_init_i2c(&mpu9250_hdl, &i2c_master_conf, &i2c_dev_conf));
     
     err = mpu9250_init(&mpu9250_hdl);
-    if (!err) {
-        ESP_LOGE(TAG, "failed to init mpu");
+    if (err != 0) {
+        ESP_LOGE(TAG, "failed to init mpu (%d)", err);
         return;
     }
 
-    ESP_ERROR_CHECK(mpu9250_init_i2c(&mpu9250_hdl, &i2c_master_conf, &i2c_dev_conf));
     ESP_LOGI(TAG, "succeed to mpu init i2c module");
+    imu_sensor_get_data();
 }

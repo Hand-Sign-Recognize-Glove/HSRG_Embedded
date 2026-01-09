@@ -7,7 +7,7 @@
   ],
   "idf.toolsPathWin": "C:\\Espressif",
   "idf.customExtraVars": {
-    "IDF_TARGET": "esp32c3"
+    "IDF_TARGET": "esp32"
   },
   "files.associations": {
     "mpu9250.h": "c",

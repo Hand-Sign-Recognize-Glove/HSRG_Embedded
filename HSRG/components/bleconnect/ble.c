@@ -3,7 +3,6 @@
 
 #include "esp_log.h"
 
-#include "nimble/ble.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 

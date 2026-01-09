@@ -1,0 +1,4 @@
+/cmake-build-debug/
+/examples/mpu9250_example/build/
+/examples/mpu9250_example/cmake-build-debug/
+.idea

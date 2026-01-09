@@ -1,0 +1,6 @@
+dependencies:
+  idf:
+    version: '>=5.3'
+description: Driver for MPU9250 9-axis gyroscope, accelerometer & magnetometer
+url: https://github.com/espressif/esp-bsp/tree/master/components/mpu6050
+version: 1.0.0

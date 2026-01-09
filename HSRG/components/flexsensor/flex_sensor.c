@@ -7,8 +7,8 @@
 
 #define CH0 ADC1_CHANNEL_0
 #define CH1 ADC1_CHANNEL_3
-#define CH2 ADC1_CHANNEL_2
-#define CH3 ADC1_CHANNEL_3
+#define CH2 ADC1_CHANNEL_6
+#define CH3 ADC1_CHANNEL_7
 #define CH4 ADC1_CHANNEL_4
 
 static const char* TAG = "flex Sensor";

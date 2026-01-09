@@ -1,0 +1,6 @@
+## IDF Component Manager Manifest File
+version: "1.0.0"
+description: MPU9250 Example
+dependencies:
+  hiruna/esp-idf-mpu-9250:
+    override_path: '../../../'

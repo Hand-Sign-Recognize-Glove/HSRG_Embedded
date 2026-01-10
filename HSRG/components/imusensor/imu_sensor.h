@@ -3,6 +3,7 @@
 #define GPIO_SDA_NUM GPIO_NUM_33
 #define GPIO_SCL_NUM GPIO_NUM_25
 #define I2C_PORT_NUM I2C_NUM_0
+#define IMU_SENSOR_LEN 1
 
 typedef struct {   
     int16_t accel_raw[1][3];

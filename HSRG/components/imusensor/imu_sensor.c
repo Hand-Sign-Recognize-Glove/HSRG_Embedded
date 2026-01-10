@@ -38,20 +38,21 @@ void imu_sensor_task(void* pvParameters) {
     ESP_LOGI(TAG, "Success to init imu sensor");
 
     imuData data;
-    uint16_t len = 1;
     QueueHandle_t imuQueue = (QueueHandle_t)pvParameters;
-    
+    TickType_t last_Tick = xTaskGetTickCount();
+
     while (1) {
+        uint16_t len = IMU_SENSOR_LEN;
         uint8_t ret = mpu9250_read(&mpu9250_hdl, data.accel_raw, data.accel_g, data.gyro_raw, data.gyro_dps, data.mag_raw, data.mag_ut, &len);
 
         if (ret != 0) {
             ESP_LOGE(TAG,  "failed to get imu data (%d)", ret);
             vTaskDelete(NULL);
         }
-        if (xQueueSend(imuQueue, &data, pdMS_TO_TICKS(1)) != pdPASS) {
+        if (xQueueOverwrite(imuQueue, &data) != pdPASS) {
             ESP_LOGE(TAG, "failed to send xQueueSend");
         }
-        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelayUntil(&last_Tick, pdMS_TO_TICKS(5));
     }
 }
 

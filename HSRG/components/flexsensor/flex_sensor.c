@@ -41,7 +41,7 @@ void flex_sensor_get_value(void* pvParameters) {
         ESP_LOGI(TAG, "Succeed to reset GPIO channel : %d", i);
     }
 
-    while(1) {
+    while (1) {
         for(int i = 0; i < 5; i++) {
             value_arr[i] = (float)adc1_get_raw(flex_channels[i]);
             

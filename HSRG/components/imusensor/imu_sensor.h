@@ -16,13 +16,15 @@ typedef struct {
 /**
  * @brief imu sensor init func
  * @param[in] None
- * @retval None
+ * @retval status code 
+ *         - 0 success
+ *         - 1 fail
  */
-void imu_sensor_init(void);
+uint8_t imu_sensor_init(void);
 
 /**
  * @brief imu sensor get data
- * @param[in] None
+ * @param[in] void* pvParameters
  * @retval None
  *  */
-void imu_sensor_get_data(void);
+void imu_sensor_task(void* pvParameters);

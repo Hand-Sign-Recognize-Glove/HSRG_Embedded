@@ -4,7 +4,6 @@
 #include <assert.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-#include "esp_now.h"
 #include "freertos/timers.h"
 #include "nvs_flash.h"
 #include "esp_random.h"
@@ -15,7 +14,6 @@
 #include "esp_now_set.h"
 #include "esp_mac.h"
 #include "esp_crc.h"
-#include "esp_now.h"
 
 static const char* TAG = "esp now";
 QueueHandle_t espnowQueue = NULL;
@@ -35,9 +33,9 @@ void wifi_init() {
     ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));  
 }
 
-static void espnow_recv_cb_idf5(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len) {
+void espnow_recv_cb_idf5(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len) {
     espnow_recv_cb(recv_info->src_addr, data, len);
-}
+}   
 
 void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
     if (mac_addr == NULL || data == NULL || data_len <= 0) {
@@ -49,6 +47,11 @@ void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
     evt.id = ESPNOW_RECV_CB;
     espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
 
+    if (data_len > ESPNOW_MAX_RECV_DATA) {
+        ESP_LOGW(TAG, "recv data too large");
+        return;
+    }
+
     memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN); 
     memcpy(recv_cb->data, data, data_len);
     recv_cb->data_len = data_len;
@@ -58,15 +61,13 @@ void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
     }
 }
 
-
 int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, uint32_t *magic) {
     espnow_data_t *buf = (espnow_data_t *)data;
-    uint16_t crc, crc_cal = 0;
 
-    if (data_len < sizeof(espnow_data_t)) {
+    if (!data || data_len < sizeof(espnow_data_t) || data_len > ESPNOW_MAX_RECV_DATA) {
         ESP_LOGE(TAG, "Recv data is too short, LEN : %d", data_len);
-        return -1;
-    }   
+        return -1; 
+    }
 
     uint8_t tmp_buf[ESPNOW_MAX_RECV_DATA];
     memcpy(tmp_buf, data, data_len);
@@ -80,6 +81,12 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
     if (crc_cal != crc_rx) {
         return -1;
     }
+
+    *state = tmp->state;
+    *seq   = tmp->seq_num;
+    *magic = tmp->magic;
+
+    return tmp->type;
 }
 
 void espnow_task(void *pvParameter) {
@@ -110,11 +117,10 @@ void espnow_task(void *pvParameter) {
             memcpy(evt_copy.recv_cb.data, recv_cb->data, recv_cb->data_len);
             evt_copy.recv_cb.data_len = recv_cb->data_len;
 
-            if (!evt_copy.recv_cb.data || 
-                evt_copy.recv_cb.data_len < sizeof(espnow_data_t) || 
+            if (evt_copy.recv_cb.data_len < sizeof(espnow_data_t) || 
                 evt_copy.recv_cb.data_len > ESPNOW_MAX_RECV_DATA) {
                 ESP_LOGE(TAG, "copy failed while deep copying");
-                vTaskDelete(NULL);
+                continue;
             } 
             xQueueSend(parsedQueue, &evt_copy, 0);
         }

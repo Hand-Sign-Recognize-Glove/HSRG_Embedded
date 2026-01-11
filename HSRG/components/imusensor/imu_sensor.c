@@ -14,7 +14,7 @@
 static const char *TAG = "IMU sensor";
 static mpu9250_handle_t mpu9250_hdl;
 
-i2c_master_bus_config_t i2c_master_conf = {
+static i2c_master_bus_config_t i2c_master_conf = {
     .clk_source = I2C_CLK_SRC_DEFAULT,
     .i2c_port = I2C_PORT_NUM,
     .sda_io_num = GPIO_SDA_NUM,
@@ -23,7 +23,7 @@ i2c_master_bus_config_t i2c_master_conf = {
     .glitch_ignore_cnt = 9,
 };
 
-i2c_device_config_t i2c_dev_conf = {
+static i2c_device_config_t i2c_dev_conf = {
             .dev_addr_length = I2C_ADDR_BIT_LEN_7,
             .device_address = 0x68,
             .scl_speed_hz = 400000,

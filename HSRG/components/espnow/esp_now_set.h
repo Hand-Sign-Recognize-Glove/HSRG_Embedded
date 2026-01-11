@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include "esp_config_basic.h"
+#include "esp_now.h"
 
 // espnowQueue 외부 변수 선언
 extern QueueHandle_t espnowQueue;
@@ -19,9 +20,9 @@ void wifi_init();
  * @param[in] const esp_now_recv_info_t *recv_info, const uint8_t *data, int len
  * @retval None
  */
-static void espnow_recv_cb_idf5(const esp_now_recv_info_t * recv_info, const uint8_t * data, int len);
+void espnow_recv_cb_idf5(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len);
 
-/**
+/** 
  * @brief receive the data for slave esp
  * @param[in] const uint8_t *mac_addr, const uint8_t *data, int data_len
  * @retval None

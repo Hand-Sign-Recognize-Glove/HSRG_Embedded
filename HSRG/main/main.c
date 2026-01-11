@@ -22,7 +22,7 @@ void app_main(void) {
     espnow_event_t evt;
     imuData imuSensorData;
 
-    QueueHandle_t flexQueue = xQueueCreate(10, sizeof(float) * 5); 
+    QueueHandle_t flexQueue = xQueueCreate(10, sizeof(uint16_t) * 5); 
     if (!flexQueue) {
         ESP_LOGE(TAG, "flex sensor failed to create new queue");
     }

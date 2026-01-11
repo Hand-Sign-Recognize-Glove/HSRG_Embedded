@@ -15,17 +15,12 @@
 #include "esp_now_set.h"
 #include "esp_mac.h"
 #include "esp_crc.h"
+#include "esp_now.h"
 
 static const char* TAG = "esp now";
-
 QueueHandle_t espnowQueue = NULL;
 uint8_t peer_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-/**
- * @brief init wifi func
- * @param[in] None
- * @retval None
- */
 void wifi_init() {
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -40,15 +35,7 @@ void wifi_init() {
     ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));  
 }
 
-/**
- * @brief receive the data for slave esp
- * @param[in] const uint8_t *mac_addr, const uint8_t *data, int data_len
- * @retval None
- * @note need to know MAC addr (and config)
- */
-
-#include "esp_now.h"
-static void espnow_recv_cb_idf5(const esp_now_recv_info_t * recv_info, const uint8_t * data, int len) {
+static void espnow_recv_cb_idf5(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len) {
     espnow_recv_cb(recv_info->src_addr, data, len);
 }
 
@@ -58,33 +45,20 @@ void espnow_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
         return;
     }
     
-    espnow_event_t evt = { 0 };
+    espnow_event_t evt;
     evt.id = ESPNOW_RECV_CB;
     espnow_event_recv_cb_t *recv_cb = &evt.recv_cb;
 
-    memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN); // 주소 복사
-    uint8_t *buf = pvPortMalloc(data_len);
-
-    if (!buf) {
-        ESP_LOGE(TAG, "malloc failed");
-        return;
-    }
-
-    memcpy(buf, data, data_len); // 데이터 복사
-    recv_cb->data = buf;
+    memcpy(recv_cb->mac_addr, mac_addr, MAC_LEN); 
+    memcpy(recv_cb->data, data, data_len);
     recv_cb->data_len = data_len;
 
     if ((xQueueSend(espnowQueue, &evt, 0) != pdPASS)) {
         ESP_LOGW(TAG, "esp now data failed to send");
-        vPortFree(buf);
     }
 }
 
-/**
- * @brief parse the espnow snet data
- * @param[in] uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, uint32_t *magic
- * @retval int
- */
+
 int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, uint32_t *magic) {
     espnow_data_t *buf = (espnow_data_t *)data;
     uint16_t crc, crc_cal = 0;
@@ -94,28 +68,21 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
         return -1;
     }   
 
-    uint16_t crc_rx = buf->crc;
-    *state = buf->state;
-    *seq = buf->seq_num;
-    *magic = buf->magic;
-    buf->crc = 0;
-    crc_cal = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, data_len);
-    buf->crc = crc_rx;
+    uint8_t tmp_buf[ESPNOW_MAX_RECV_DATA];
+    memcpy(tmp_buf, data, data_len);
 
-    if (crc_cal == crc_rx) {
-        return buf->type;
+    espnow_data_t *tmp = (espnow_data_t *)tmp_buf;
+    uint16_t crc_rx = tmp->crc;
+    tmp->crc = 0;
+
+    uint16_t crc_cal = esp_crc16_le(UINT16_MAX, tmp_buf, data_len);
+
+    if (crc_cal != crc_rx) {
+        return -1;
     }
-
-    return -1;
 }
 
-/**
- * @brief ESP now main task
- * @param[in] void *pvParameter
- * @retval None
- */
-void espnow_task(void *pvParameter)
-{
+void espnow_task(void *pvParameter) {
     QueueHandle_t parsedQueue = (QueueHandle_t)pvParameter;  
     espnow_event_t evt;
     uint8_t recv_state = 0;
@@ -139,18 +106,18 @@ void espnow_task(void *pvParameter)
 
         if (type >= 0) {
             espnow_event_t evt_copy = evt;
+            
+            memcpy(evt_copy.recv_cb.data, recv_cb->data, recv_cb->data_len);
+            evt_copy.recv_cb.data_len = recv_cb->data_len;
 
-            evt_copy.recv_cb.data = pvPortMalloc(recv_cb->data_len);
-            if (evt_copy.recv_cb.data == NULL) {
-                ESP_LOGE(TAG, "malloc failed while deep copying");
-            } else {
-                memcpy(evt_copy.recv_cb.data, recv_cb->data, recv_cb->data_len);
-            }
+            if (!evt_copy.recv_cb.data || 
+                evt_copy.recv_cb.data_len < sizeof(espnow_data_t) || 
+                evt_copy.recv_cb.data_len > ESPNOW_MAX_RECV_DATA) {
+                ESP_LOGE(TAG, "copy failed while deep copying");
+                vTaskDelete(NULL);
+            } 
             xQueueSend(parsedQueue, &evt_copy, 0);
         }
-
-        vPortFree(recv_cb->data);
-        recv_cb->data = NULL;
     }
 }
  
@@ -194,11 +161,6 @@ void espnow_init(void) {
     ESP_LOGI(TAG, "Initialization successful");
 }
 
-/**
- * @brief deinit the espnowQueue
- * @param[in] None
- * @retval None
- */
 void espnow_deinit(void) {
     esp_err_t err;
 

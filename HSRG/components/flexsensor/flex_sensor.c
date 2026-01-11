@@ -15,15 +15,15 @@ static const char* TAG = "flex Sensor";
 
 void flex_sensor_get_value(void* pvParameters) {
     static esp_err_t err;
-    float value_arr[5];
+    uint16_t value_arr[5];
     QueueHandle_t flexQueue = (QueueHandle_t)pvParameters;
     
-    adc1_channel_t flex_channels[5] = {CH0, CH1, CH2, CH3, CH4};
+    static const adc1_channel_t flex_channels[5] = {CH0, CH1, CH2, CH3, CH4};
 
     err = adc1_config_width(ADC_WIDTH_BIT_12); // 몇 비트 읽을지 결정, 높을수록 섬세함
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Fail to config adc width / Error name : %s", esp_err_to_name(err));
-        return;
+        vTaskDelete(NULL);
     }
     ESP_LOGI(TAG, "Succeed to config adc width");
 
@@ -31,7 +31,7 @@ void flex_sensor_get_value(void* pvParameters) {
         err = adc1_config_channel_atten(flex_channels[i], ADC_ATTEN_DB_11); // 감쇠 정도 (flex sensor에 11decibel까지 줄여서 전달)
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "Fail to reset GPIO channel : %d / Error name : %s", i, esp_err_to_name(err));
-            return;
+            vTaskDelete(NULL);
         }
         ESP_LOGI(TAG, "Succeed to reset GPIO channel : %d", i);
     }
@@ -41,7 +41,7 @@ void flex_sensor_get_value(void* pvParameters) {
             value_arr[i] = (float)adc1_get_raw(flex_channels[i]);
             
             if (value_arr[i] <= -1) {
-                ESP_LOGE(TAG, "failed to get %d : value", i);
+                ESP_LOGE(TAG, "failed to get %d : value (%d)", i, value_arr[i]);
                 continue;
             }
         }

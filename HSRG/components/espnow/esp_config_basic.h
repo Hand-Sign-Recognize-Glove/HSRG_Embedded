@@ -19,7 +19,7 @@ extern uint8_t peer_mac[6];
 
 typedef struct {
     uint8_t mac_addr[MAC_LEN];
-    uint8_t *data;
+    uint8_t data[250];
     int data_len;
 } espnow_event_recv_cb_t;
 

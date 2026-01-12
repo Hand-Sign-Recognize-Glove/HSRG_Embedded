@@ -23,11 +23,6 @@ static bool notify_enabled = false;
 #define MY_SERVICE_UUID 0xFFF0
 #define MY_CHAR_UUID 0xFFF1
 
-/**
- * @brief Ble callback func
- * @param[in] struct ble_gap_event *event, void *arg
- * @retval int
- */
 int gap_event_cb(struct ble_gap_event *event, void *arg) {
     switch (event->type) {
     
@@ -57,11 +52,6 @@ int gap_event_cb(struct ble_gap_event *event, void *arg) {
     return 0;
 }
 
-/**
- * @brief start ble advertising
- * @param[in] None
- * @retval None 
- */
 void start_ad(void) {
     struct ble_gap_adv_params adv_params = { 0 };
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
@@ -79,11 +69,6 @@ void start_ad(void) {
     ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, NULL, gap_event_cb, NULL);
 }
 
-/**
- * @brief send the string to phone
- * @param[in] const char* data
- * @retval None
- */
 void ble_send_string(const char* data) {
     if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE) return;
     if (!notify_enabled) return;
@@ -97,11 +82,6 @@ void ble_send_string(const char* data) {
     ble_gatts_notify_custom(g_conn_handle, g_chr_handle, om);
 }
 
-/**
- * @brief access cb func, convert true/false
- * @param[in] uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg
- * @retval int
- */
 int chr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
     if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_DSC) {
         uint16_t v = ctxt->om->om_data[1] << 8 | ctxt->om->om_data[0];
@@ -141,7 +121,6 @@ void host_task(void *param)
     nimble_port_run();
     nimble_port_freertos_deinit();
 }
-
 
 void ble_main_task(void* pvParameter) {
     nimble_port_init();

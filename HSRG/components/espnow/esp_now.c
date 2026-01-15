@@ -88,6 +88,7 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
 }
 
 void espnow_task(void *pvParameter) {
+    vTaskDelete(NULL);
     QueueHandle_t parsedQueue = (QueueHandle_t)pvParameter;  
     espnow_event_t evt;
     uint8_t recv_state = 0;

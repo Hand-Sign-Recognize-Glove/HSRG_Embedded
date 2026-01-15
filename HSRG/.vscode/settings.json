@@ -30,5 +30,6 @@
     "--background-index",
     "--query-driver=**",
     "--compile-commands-dir=c:\\HSRG_Embedded\\HSRG\\build"
-  ]
+  ],
+  "idf.portWin": "COM5"
 }

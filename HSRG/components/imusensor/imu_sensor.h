@@ -1,7 +1,7 @@
 #pragma once
 
-#define GPIO_SDA_NUM GPIO_NUM_33
-#define GPIO_SCL_NUM GPIO_NUM_25
+#define GPIO_SDA_NUM GPIO_NUM_21
+#define GPIO_SCL_NUM GPIO_NUM_22
 #define I2C_PORT_NUM I2C_NUM_0
 #define IMU_SENSOR_LEN 1
 

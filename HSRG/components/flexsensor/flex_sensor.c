@@ -17,6 +17,11 @@ void flex_sensor_get_value(void* pvParameters) {
     static esp_err_t err;
     uint16_t value_arr[5];
     QueueHandle_t flexQueue = (QueueHandle_t)pvParameters;
+
+    if (flexQueue == NULL) {
+        ESP_LOGE(TAG, "flexQueue is NULL");
+        vTaskDelete(NULL);
+    }
     
     static const adc1_channel_t flex_channels[5] = {CH0, CH1, CH2, CH3, CH4};
 
@@ -38,16 +43,16 @@ void flex_sensor_get_value(void* pvParameters) {
 
     while (1) {
         for(int i = 0; i < 5; i++) {
-            value_arr[i] = (float)adc1_get_raw(flex_channels[i]);
-            
-            if (value_arr[i] <= -1) {
-                ESP_LOGE(TAG, "failed to get %d : value (%d)", i, value_arr[i]);
+            int raw = adc1_get_raw(flex_channels[i]);
+            if (raw < 0) {
+                ESP_LOGE(TAG, "ADC read fail ch %d", i);
                 continue;
             }
+            value_arr[i] = (uint16_t)raw;
         }
        
-        if (xQueueSend(flexQueue, value_arr, 0) != pdPASS) {
-            ESP_LOGE(TAG, "failed to send xQueueSend");
+        if (xQueueSend(flexQueue, value_arr, pdMS_TO_TICKS(10)) != pdPASS) {
+            ESP_LOGE(TAG, "failed to send xQueueSend"); 
         }
 
         vTaskDelay(pdMS_TO_TICKS(100)); // 조절하면 글자 입력 시간 조절 가능

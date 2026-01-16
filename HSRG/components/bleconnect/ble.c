@@ -46,6 +46,15 @@ int gap_event_cb(struct ble_gap_event *event, void *arg) {
 
         break;
 
+    case BLE_GAP_EVENT_SUBSCRIBE:
+        ESP_LOGI(TAG, "Subscribe event detected");
+
+        if (event->subscribe.attr_handle == g_chr_handle) { 
+            notify_enabled = event->subscribe.cur_notify;
+            ESP_LOGI(TAG, "Notify enabled: %s", notify_enabled ? "TRUE" : "FALSE");
+        }
+        break;    
+        
     default:
         break;
     }
@@ -66,20 +75,30 @@ void start_ad(void) {
     ble_gap_adv_set_fields(&fields);
 
     ESP_LOGI(TAG, "Start adv");
-    ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, NULL, gap_event_cb, NULL);
+    ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
 }
 
 void ble_send_string(const char* data) {
-    if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE) return;
+    if (g_conn_handle == BLE_HS_CONN_HANDLE_NONE) {
+        ESP_LOGE(TAG, "No connection");
+        return;
+    }
+
     if (!notify_enabled) return;
 
     struct os_mbuf *om = ble_hs_mbuf_from_flat(data, strlen(data));
     if (!om) {
-        ESP_LOGE(TAG, "failed to copy mbuf");
+        ESP_LOGE(TAG, "Failed to allocate mbuf");
         return;
     }
 
-    ble_gatts_notify_custom(g_conn_handle, g_chr_handle, om);
+    int rc = ble_gatts_notify_custom(g_conn_handle, g_chr_handle, om);
+    
+    if (rc == 0) {
+        ESP_LOGI(TAG, "Notification sent: %s", data);
+    } else {
+        ESP_LOGE(TAG, "Error sending notification, rc=%d", rc);
+    }
 }
 
 int chr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
@@ -123,7 +142,6 @@ void host_task(void *param)
 }
 
 void ble_main_task(void* pvParameter) {
-    vTaskDelete(NULL);
     nimble_port_init();
 
     ble_hs_cfg.sync_cb = ble_app_on_sync;

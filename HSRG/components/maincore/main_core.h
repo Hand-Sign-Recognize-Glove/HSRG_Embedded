@@ -10,3 +10,5 @@
 #include "esp_now_set.h"
 #include "nvs_flash.h"
 #include "ble.h"
+
+void main_core(void *pvParameters);

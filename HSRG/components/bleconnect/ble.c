@@ -102,13 +102,6 @@ void ble_send_string(const char* data) {
 }
 
 int chr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
-    if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_DSC) {
-        uint16_t v = ctxt->om->om_data[1] << 8 | ctxt->om->om_data[0];
-        notify_enabled = (v == 0x0001);
-    }
-    else {
-        ESP_LOGW(TAG, "bad request");
-    }
     return 0;
 }
 
@@ -142,10 +135,20 @@ void host_task(void *param)
 }
 
 void ble_main_task(void* pvParameter) {
+    ESP_LOGI(TAG, "BLE Init Start");
+
     nimble_port_init();
 
     ble_hs_cfg.sync_cb = ble_app_on_sync;
-    ble_gatts_count_cfg(gatt_svcs);
-    ble_gatts_add_svcs(gatt_svcs);
-    nimble_port_freertos_init(host_task);
+    
+    int rc = ble_gatts_count_cfg(gatt_svcs);
+    if (rc != 0) ESP_LOGE(TAG, "GATT count cfg failed");
+
+    rc = ble_gatts_add_svcs(gatt_svcs);
+    if (rc != 0) ESP_LOGE(TAG, "GATT add svcs failed");
+
+    nimble_port_freertos_init(host_task); 
+
+    ESP_LOGI(TAG, "BLE Init Done, Deleting this init task");
+    vTaskDelete(NULL);
 }

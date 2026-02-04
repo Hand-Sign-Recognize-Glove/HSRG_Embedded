@@ -40,7 +40,7 @@ void main_core(void *pvParameters) {
         // } 
         if (xQueueReceive(flexQueue, flex_values, 0) == pdPASS) {
             for(int i = 0; i < 5; i++) {
-                ESP_LOGI(TAG, "finger%d : %d", i, flex_values[i]);
+                cal_func();
             }
         }
         if (xQueueReceive(espnowDataQueue, &evt, 0) == pdPASS) {   

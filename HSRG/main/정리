@@ -2,3 +2,5 @@
 2. main은 OSJ처럼 로그 및 기본 초기화만, 따로 main core 만들기
 3. 삼항연산자를 사용한 status return 함수를 활용할 수 있음
 4. 오픈소스 RTOS를 볼까?
+
+imu 코드도 flex 같이 빼오기

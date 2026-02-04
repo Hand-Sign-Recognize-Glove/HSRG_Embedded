@@ -12,4 +12,5 @@
 #include "ble.h"
 #include "cal.h"
 
+extern QueueHandle_t flexQueue;
 void main_core(void *pvParameters);

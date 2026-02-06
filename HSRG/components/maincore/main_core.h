@@ -11,6 +11,9 @@
 #include "nvs_flash.h"
 #include "ble.h"
 #include "cal.h"
+#include "imu_sensor.h"
 
 extern QueueHandle_t flexQueue;
+extern QueueHandle_t imuQueue;
+
 void main_core(void *pvParameters);

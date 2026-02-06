@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "driver/adc.h"
+#include "flex_sensor.h"
 
 #define CH0 ADC1_CHANNEL_0
 #define CH1 ADC1_CHANNEL_3

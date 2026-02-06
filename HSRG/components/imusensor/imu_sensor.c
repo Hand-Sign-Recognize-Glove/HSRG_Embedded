@@ -1,15 +1,7 @@
-#include <stdio.h>
-#include "esp_log.h"
+#include "imu_sensor.h"
 #include "mpu9250.h"
 #include "driver_mpu9250.h"
 #include "mpu9250_tests.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "driver/i2c_master.h"
-#include "driver/gpio.h"
-#include "esp_err.h"
-#include "imu_sensor.h"
 
 static const char *TAG = "IMU sensor";
 static mpu9250_handle_t mpu9250_hdl;

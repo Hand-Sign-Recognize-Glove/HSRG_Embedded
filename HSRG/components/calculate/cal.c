@@ -9,6 +9,8 @@ int max_standard[5] = {3000, 4000, 4000, 4000, 3800};
 uint16_t flex_values[5] = { -1 };
 float f_flex_values[5] = { -1 };
 
+imuData imuSensorData;
+
 void cal_func(float *flex_arr) {
     return;
 }
@@ -21,7 +23,7 @@ float convert_to_float(int value, int min_val, int max_val) {
 }
 
 void main_cal_task(void* pvParameters) {
-    while (flexQueue == NULL) {
+    while (flexQueue == NULL || imuQueue == NULL) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
@@ -41,6 +43,20 @@ void main_cal_task(void* pvParameters) {
         else {
             ESP_LOGE(TAG, "failed to recv flex Queue");
             ESP_LOGW(TAG, "Waiting to recv flex Queue");
+            vTaskDelay(100);
+        }
+        if (xQueueReceive(imuQueue, &imuSensorData, 0) == pdPASS) {
+            ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f",
+            imuSensorData.accel_g[0][0],
+            imuSensorData.accel_g[0][1],
+            imuSensorData.accel_g[0][2],
+            imuSensorData.gyro_dps[0][0],
+            imuSensorData.gyro_dps[0][1],
+            imuSensorData.gyro_dps[0][2]);
+        } 
+        else {
+            ESP_LOGE(TAG, "failed to recv imu Queue");
+            ESP_LOGW(TAG, "Waiting to recv imu Queue");
             vTaskDelay(100);
         }
     }

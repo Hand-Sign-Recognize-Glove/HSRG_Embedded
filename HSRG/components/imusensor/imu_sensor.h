@@ -1,5 +1,13 @@
 #pragma once
 #include "stdint.h"
+#include <stdio.h>
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "driver/i2c_master.h"
+#include "driver/gpio.h"
+#include "esp_err.h"
 
 #define GPIO_SDA_NUM GPIO_NUM_21
 #define GPIO_SCL_NUM GPIO_NUM_22

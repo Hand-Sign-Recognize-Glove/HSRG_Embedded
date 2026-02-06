@@ -1,5 +1,12 @@
 #pragma once
 
+#include <stdio.h>
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "driver/adc.h"
+
 /** 
  * @brief flex sensor의 기본 설정 및 값을 얻어온 후 main에 queue로 전송한다    
  * @param void* pvParameters 로 Task 핸들을 받아온다

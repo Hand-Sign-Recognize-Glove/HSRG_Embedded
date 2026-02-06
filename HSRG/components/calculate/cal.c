@@ -9,7 +9,7 @@ int max_standard[5] = {3000, 4000, 4000, 4000, 3800};
 uint16_t flex_values[5] = { -1 };
 float f_flex_values[5] = { -1 };
 
-void cal_func(void) {
+void cal_func(float *flex_arr) {
     return;
 }
 
@@ -30,6 +30,13 @@ void main_cal_task(void* pvParameters) {
             for(int i = 0; i < 5; i++) {
                 f_flex_values[i] = convert_to_float(flex_values[i], min_standard[i], max_standard[i]);
             }
+
+            cal_func(f_flex_values);
+        }
+        else {
+            ESP_LOG(TAG, "failed to recv flex Queue");
+            ESP_LOW(TAG, "Waiting to recv flex Queue");
+            vTaskDelay(100);
         }
     }
 }

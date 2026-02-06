@@ -14,7 +14,7 @@
  * @param void
  * @retval[in] None
  */
-void cal_func(void);
+void cal_func(float *flex_arr);
 
 /**
  * @brief 자료형을 float로 변환

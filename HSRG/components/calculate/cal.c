@@ -11,7 +11,7 @@ float f_flex_values[5] = { -1 };
 
 imuData imuSensorData;
 
-void cal_func(float *flex_arr) {
+void cal_func(float *flex_arr, imuData imu) {
     return;
 }
 
@@ -32,33 +32,21 @@ void main_cal_task(void* pvParameters) {
             for(int i = 0; i < 5; i++) {
                 f_flex_values[i] = convert_to_float(flex_values[i], min_standard[i], max_standard[i]);
             }
-            ESP_LOGW(TAG, "%f, %f, %f, %f, %f", 
-                f_flex_values[0], 
-                f_flex_values[1], 
-                f_flex_values[2], 
-                f_flex_values[3], 
-                f_flex_values[4]);
-            cal_func(f_flex_values);
+            ESP_LOGW(TAG, "%f, %f, %f, %f, %f", f_flex_values[0], f_flex_values[1], f_flex_values[2], f_flex_values[3], f_flex_values[4]);
         }
-        else {
-            ESP_LOGE(TAG, "failed to recv flex Queue");
-            ESP_LOGW(TAG, "Waiting to recv flex Queue");
-            vTaskDelay(100);
-        }
-        if (xQueueReceive(imuQueue, &imuSensorData, 0) == pdPASS) {
-            ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f",
-            imuSensorData.accel_g[0][0],
-            imuSensorData.accel_g[0][1],
-            imuSensorData.accel_g[0][2],
-            imuSensorData.gyro_dps[0][0],
-            imuSensorData.gyro_dps[0][1],
-            imuSensorData.gyro_dps[0][2]);
+
+        bool imu_updated = false;
+        while (xQueueReceive(imuQueue, &imuSensorData, 0) == pdPASS) {
+            imu_updated = true;
         } 
-        else {
-            ESP_LOGE(TAG, "failed to recv imu Queue");
-            ESP_LOGW(TAG, "Waiting to recv imu Queue");
-            vTaskDelay(100);
+
+        if (imu_updated) {
+            ESP_LOGI(TAG, "ACC: %.2f %.2f %.2f  GYR: %.2f %.2f %.2f",
+            imuSensorData.accel_g[0][0], imuSensorData.accel_g[0][1],
+            imuSensorData.accel_g[0][2], imuSensorData.gyro_dps[0][0],
+            imuSensorData.gyro_dps[0][1], imuSensorData.gyro_dps[0][2]);
         }
+        cal_func(f_flex_values, imuSensorData);
     }
 }
 

@@ -11,10 +11,10 @@
 
 /**
  * @brief 글자 계산 로직
- * @param void
+ * @param float *flex_arr, imuData imu
  * @retval[in] None
  */
-void cal_func(float *flex_arr);
+void cal_func(float *flex_arr, imuData imu);
 
 /**
  * @brief 자료형을 float로 변환

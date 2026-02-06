@@ -1,4 +1,5 @@
 #pragma once
+#include "stdint.h"
 
 #define GPIO_SDA_NUM GPIO_NUM_21
 #define GPIO_SCL_NUM GPIO_NUM_22

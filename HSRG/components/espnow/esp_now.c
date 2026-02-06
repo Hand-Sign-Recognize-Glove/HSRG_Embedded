@@ -26,12 +26,12 @@ void wifi_init() {
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
-
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(ESPNOW_WIFI_MODE));
+
+    ESP_LOGI(TAG, "Starting WiFi ...");
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));  
+    ESP_LOGI(TAG, "WiFi Started!");
 }
 
 void espnow_recv_cb_idf5(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len) {

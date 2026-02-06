@@ -30,12 +30,17 @@ void main_cal_task(void* pvParameters) {
             for(int i = 0; i < 5; i++) {
                 f_flex_values[i] = convert_to_float(flex_values[i], min_standard[i], max_standard[i]);
             }
-
+            ESP_LOGW(TAG, "%f, %f, %f, %f, %f", 
+                f_flex_values[0], 
+                f_flex_values[1], 
+                f_flex_values[2], 
+                f_flex_values[3], 
+                f_flex_values[4]);
             cal_func(f_flex_values);
         }
         else {
-            ESP_LOG(TAG, "failed to recv flex Queue");
-            ESP_LOW(TAG, "Waiting to recv flex Queue");
+            ESP_LOGE(TAG, "failed to recv flex Queue");
+            ESP_LOGW(TAG, "Waiting to recv flex Queue");
             vTaskDelay(100);
         }
     }

@@ -1,25 +1,17 @@
 #pragma once
 
-#include "freertos/queue.h"
-#include <inttypes.h>
-#include "esp_config_basic.h"
-#include "esp_now.h"
-#include <stdlib.h>
-#include <time.h>
+#include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/timers.h"
-#include "nvs_flash.h"
-#include "esp_random.h"
-#include "esp_event.h"
-#include "esp_netif.h"
-#include "esp_wifi.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
-#include "esp_now_set.h"
 #include "esp_mac.h"
 #include "esp_crc.h"
+#include "esp_now.h"
+#include "esp_config_basic.h"
 
 // espnowQueue 외부 변수 선언
 extern QueueHandle_t espnowQueue;

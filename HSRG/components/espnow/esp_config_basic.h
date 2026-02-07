@@ -1,4 +1,5 @@
-#include <stdint.h>
+#pragma once;
+#include "esp_now_set.h"
 
 #define ESPNOW_WIFI_MODE WIFI_MODE_STA
 #define ESPNOW_WIFI_IF WIFI_IF_STA

@@ -9,12 +9,22 @@
 #include "freertos/queue.h"
 #include "main_core.h"
 
+typedef struct {
+    const char *letter;
+    int id;
+    float standard_flex[5];
+    float standard_imu[5];
+} Gesture_t;
+
+extern Gesture_t gesture_consonant[14];
+extern Gesture_t gesture_vowels [10];
+
 /**
  * @brief 글자 계산 로직
  * @param float *flex_arr, imuData imu
  * @retval[in] None
  */
-void cal_func(float *flex_arr, imuData imu);
+void cal_func(float *flex_arr, float *imu_arr);
 
 /**
  * @brief 자료형을 float로 변환

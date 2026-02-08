@@ -22,7 +22,8 @@
 static const char* TAG = "esp now";
 QueueHandle_t espnowQueue = NULL;
 TaskHandle_t espnowTaskHandle = NULL;
-uint8_t peer_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+uint8_t peer_mac[6] = {0x94, 0x54, 0xc5, 0x73, 0x92, 0x90};
 
 void wifi_init() {
     ESP_ERROR_CHECK(esp_netif_init());
@@ -76,22 +77,33 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
         return -1; 
     }
 
-    espnow_data_t *tmp = (espnow_data_t *)data;
-    uint16_t crc_rx = tmp->crc;
-    tmp->crc = 0;
+    uint8_t *buffer_copy = (uint8_t *)malloc(data_len);
+    if (buffer_copy == NULL) {
+        ESP_LOGE(TAG, "Memory allocation failed for CRC check");
+        return -1;
+    }
+    memcpy(buffer_copy, data, data_len);
 
-    uint16_t crc_cal = esp_crc16_le(UINT16_MAX, data, data_len);
-    tmp->crc = crc_rx;
+    espnow_data_t *tmp = (espnow_data_t *)buffer_copy;
+    uint16_t crc_rx = tmp->crc;
+    tmp->crc = 0; 
+
+    uint16_t crc_cal = esp_crc16_le(UINT16_MAX, buffer_copy, data_len);
+    
+    free(buffer_copy);
 
     if (crc_cal != crc_rx) {
         return -1;
     }
 
-    *state = tmp->state;
-    *seq = tmp->seq_num;
-    *magic = tmp->magic;
+    // 값 반환은 원본 데이터 포인터 대신 파싱된 값 사용
+    // 주의: 여기서 tmp는 이미 해제된 메모리이므로, 원본 data를 캐스팅해서 값 읽음
+    espnow_data_t *origin = (espnow_data_t *)data;
+    *state = origin->state;
+    *seq = origin->seq_num;
+    *magic = origin->magic;
 
-    return tmp->type;
+    return origin->type;
 }
 
 void espnow_task(void *pvParameter) {
@@ -156,9 +168,9 @@ void espnow_init(void) {
     }
 
     memset(peer, 0, sizeof(esp_now_peer_info_t));
-    peer->channel = CONFIG_ESPNOW_CHANNEL; // WiFi 채널
-    peer->ifidx = ESPNOW_WIFI_IF; // 인터페이스 타입
-    peer->encrypt = false; // 암호화 여부
+    peer->channel = CONFIG_ESPNOW_CHANNEL; 
+    peer->ifidx = ESPNOW_WIFI_IF; 
+    peer->encrypt = false; 
     memcpy(peer->peer_addr, peer_mac, MAC_LEN);
     ESP_ERROR_CHECK(esp_now_add_peer(peer));
     free(peer);
@@ -184,4 +196,3 @@ void espnow_deinit(void) {
         return;
     }
 }
-

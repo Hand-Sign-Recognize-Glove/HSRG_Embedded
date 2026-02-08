@@ -114,6 +114,10 @@ float convert_to_float(int value, int min_val, int max_val) {
 }
 
 void main_cal_task(void* pvParameters) {
+    ESP_LOGI(TAG, "This is Test");
+    ESP_LOGI(TAG, "Cal func called");
+    // vTaskDelay(pdMS_TO_TICKS(1000000));
+
     while (flexQueue == NULL || imuQueue == NULL) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
@@ -142,5 +146,6 @@ void main_cal_task(void* pvParameters) {
         }
         cal_func(f_flex_values, f_imu_values);
     }
+    vTaskDelay(pdMS_TO_TICKS(200));
 }
 
